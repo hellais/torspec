@@ -1,0 +1,74 @@
+Filename: xxx-onion-nyms.txt
+Title: .onion nym system
+Author: Arturo Filastò, Jacob Appelbaum
+Created: 17 December 2011
+Status: Draft
+
+TOC
+1. Intro and Motivation
+2. Definitions
+3. Registration
+  3.1 General implementation
+  3.2 Tor2web implementation
+4. Expiration
+5. Synchronization
+
+1. Intro and Motivation
+  The main issue behind the wide scale adoption of .onion addressing is the fact that
+  they are not human memorable. While zooko's triangle says that you can only have
+  at most two of "memorable", "secure" and "global" it is possible to build on the
+  current .onion addressing system a nym mechanism.
+  We will define the registration system generally and also it's particual application
+  to the tor2web network.
+
+2. Definitions
+  These are the definitions of the actors involved in the process.
+
+  Beppe - The owner of the Tor Hidden Service
+  User - A random user of Tor/tor2web
+  v2cbb2l4lsnpio4q.onion - The .onion address that Beppe is interested in registering
+  antani - The nym Beppe is interested in associating to v2cbb2l4lsnpio4q.onion
+  t2w - A tor2web node
+
+
+3. Registration
+  This is the process through which Beppe is able to make a registration for his chosen
+  nym.
+
+  3.1 General implementation
+  Beppe wishes to register "antani" to point to v2cbb2l4lsnpio4q.onion so he creates a
+  a TCP service listening on his .onion will respond with the string "reg antani" when
+  interrogated.
+  The requester will make a lookup in his database to see if "antani" is already
+  registered. If it is not registered the "antani" <-> v2cbb2l4lsnpio4q.onion mapping
+  is created. A timestamp is added to the database.
+
+  3.2 Tor2web implementation
+  Beppe creates file called "onion.txt" containing the string "reg antani" and uploads
+  it to the root of his web server. When User visits v2cbb2l4lsnpio4q.tor2web.org the
+  t2w checks if his database contains a mapping with v2cbb2l4lsnpio4q.onion, if it does
+  not it attempts (in background) to request for http://v2cbb2l4lsnpio4q.onion/onion.txt.
+  If the file exists t2w reads it and extracts the "antani" string. A lookup is made in
+  his database. If "antani" is not registered he created a mapping between "antani" and
+  v2cbb2l4lsnpio4q.onion. A timestamp is added to the database.
+
+4. Expiration
+  A nym can expire if either the HS goes offline of if he explicitly requires to remove
+  the assosiation to that particualr nym. This allows dynamic reallocation of nyms and
+  avoids nym squatting.
+
+  4.1 Time delay
+  After 30 days since the last check another request is made to either the TCP service
+  or for the "onion.txt" file. If the Hidden Service is offline or if the requested
+  mapping has changed the mapping is removed or modified.
+  If the nym is still valid the database timestamp entry is updated.
+
+  4.2 Release
+  The HS can specify the "release" string to delete the entry from the nym database.
+
+5. Synchronization
+  To keep the database of registered nyms up to date in all nodes a synchronization
+  mechanism is required.
+  TODO
+
+
